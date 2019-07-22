@@ -1,0 +1,36 @@
+- args:
+    relationship: country
+    table:
+      name: city
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: capital_city
+    table:
+      name: country
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: languages
+    table:
+      name: country
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: cities
+    table:
+      name: country
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: country
+    table:
+      name: country_language
+      schema: public
+  type: drop_relationship
+- args:
+    relationship: capital_of
+    table:
+      name: city
+      schema: public
+  type: drop_relationship

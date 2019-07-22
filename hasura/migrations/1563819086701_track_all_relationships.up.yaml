@@ -1,0 +1,60 @@
+- args:
+    name: country
+    table:
+      name: city
+      schema: public
+    using:
+      foreign_key_constraint_on: country_code
+  type: create_object_relationship
+- args:
+    name: capital_city
+    table:
+      name: country
+      schema: public
+    using:
+      foreign_key_constraint_on: capital
+  type: create_object_relationship
+- args:
+    name: languages
+    table:
+      name: country
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: country_code
+        table:
+          name: country_language
+          schema: public
+  type: create_array_relationship
+- args:
+    name: cities
+    table:
+      name: country
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: country_code
+        table:
+          name: city
+          schema: public
+  type: create_array_relationship
+- args:
+    name: country
+    table:
+      name: country_language
+      schema: public
+    using:
+      foreign_key_constraint_on: country_code
+  type: create_object_relationship
+- args:
+    name: capital_of
+    table:
+      name: city
+      schema: public
+    using:
+      foreign_key_constraint_on:
+        column: capital
+        table:
+          name: country
+          schema: public
+  type: create_array_relationship
