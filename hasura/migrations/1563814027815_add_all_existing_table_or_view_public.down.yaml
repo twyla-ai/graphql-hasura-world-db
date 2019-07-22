@@ -1,0 +1,15 @@
+- args:
+    table:
+      name: city
+      schema: public
+  type: untrack_table
+- args:
+    table:
+      name: country
+      schema: public
+  type: untrack_table
+- args:
+    table:
+      name: country_language
+      schema: public
+  type: untrack_table

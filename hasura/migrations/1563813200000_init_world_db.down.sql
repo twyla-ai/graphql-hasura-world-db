@@ -1,0 +1,1 @@
+DROP TABLE public.city, public.country, public.country_language CASCADE ;
