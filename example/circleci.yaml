@@ -1,0 +1,39 @@
+version: 2.1
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.7
+      - image: docker.io/postgres:9.6-alpine
+        environment:
+          POSTGRES_PASSWORD: hasura
+          POSTGRES_USER: hasura
+          POSTGRES_DB: hasura
+      - image: quay.io/twyla-ai/hasura-world-db:latest
+        environment:
+          HASURA_GRAPHQL_DATABASE_URL: postgres://hasura:hasura@127.0.0.1:5432/hasura
+          HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
+          HASURA_GRAPHQL_ADMIN_SECRET: secret
+        entrypoint: /bin/sh
+        command:
+          - -c
+          - "sed -i s/'nc localhost'/'nc -z localhost'/g /bin/docker-entrypoint.sh; echo -n 'Waiting for postgres '; until nc -z 127.0.0.1 5432 >/dev/null 2>&1; do echo -n .; sleep 2s; done; echo ' DONE'; source docker-entrypoint.sh graphql-engine serve"
+    steps:
+      - run:
+          name: wait for hasura api server
+          command: |
+            echo -n 'Waiting for hasura '
+            until nc -z 127.0.0.1 8080 >/dev/null 2>&1; do echo -n .; sleep 2s; done
+            echo ' DONE'
+      - run:
+          name: test for Germany in countries
+          command: |
+            curl --silent \
+              -H 'content-type: application/json' -H 'x-hasura-admin-secret: secret' \
+              --data-binary '{"query":"{\n  country {\n    name\n  }\n}\n","variables":null}' --compressed \
+              'http://127.0.0.1:8080/v1/graphql' \
+            | jq -r '.data.country[] | select(.name == "Germany") | .name' | grep -q Germany
+
+workflows:
+  ci-checks:
+    jobs:
+      - test
