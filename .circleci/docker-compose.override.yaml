@@ -1,0 +1,7 @@
+version: '3.6'
+services:
+  hasura:
+    entrypoint: /bin/sh
+    command:
+      - -c
+      - "sed -i s/'nc localhost'/'nc -z localhost'/g /bin/docker-entrypoint.sh; echo -n 'Waiting for postgres '; until nc -z postgres 5432 >/dev/null 2>&1; do echo -n .; sleep 2s; done; echo ' DONE'; source docker-entrypoint.sh graphql-engine serve"
