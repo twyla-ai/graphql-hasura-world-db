@@ -1,0 +1,53 @@
+version: 2.1
+jobs:
+  test:
+    docker:
+      - image: circleci/python:3.7
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run:
+          name: build container image
+          command: docker-compose build
+      - run:
+          name: start services
+          command: docker-compose -f docker-compose.yaml -f .circleci/docker-compose.override.yaml up -d
+      - run:
+          name: pull required test images
+          command: |
+            docker pull docker.io/appropriate/curl
+      - run:
+          name: wait for hasura api server
+          command: |
+            docker run --rm -it \
+              --network "`basename $(pwd)`_default" \
+              docker.io/appropriate/curl \
+                --retry 30 --retry-delay 3 --retry-connrefused \
+                http://hasura:8080
+            # TODO: replace this with something more elegant
+            # this is done today so as to allow migrations to be applied prior to tests
+            sleep 10s
+      - run:
+          name: create responses output directory
+          command: mkdir -p tests/responses
+      - run:
+          name: test for Germany in countries
+          command: |
+            docker run --rm \
+              --network "`basename $(pwd)`_default" \
+              docker.io/appropriate/curl \
+                --silent \
+                --compressed \
+                -H 'content-type: application/json' \
+                -H 'x-hasura-admin-secret: secret' \
+                --data-binary '{"query":"{\n  country {\n    name\n  }\n}\n","variables":null}' \
+                'http://hasura:8080/v1/graphql' > tests/responses/cities.json
+            jq -r '.data.country[] | select(.name == "Germany") | .name' tests/responses/cities.json \
+              | grep -q Germany
+      - store_artifacts:
+          path: tests/responses
+
+workflows:
+  ci-checks:
+    jobs:
+      - test
