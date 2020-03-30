@@ -1,5 +1,6 @@
 # Hasura World Database Demo
 [![Docker Repository on Quay.io](https://quay.io/repository/twyla-ai/hasura-world-db/status "Docker Repository on Quay.io")](https://quay.io/repository/twyla-ai/hasura-world-db)
+[![](https://github.com/twyla-ai/hasura-world-db/workflows/Main/badge.svg)](https://github.com/twyla-ai/hasura-world-db/actions?query=workflow%3A%22Main%22)
 
 A graphql interface using [hasura](https://hasura.io/) and postgres for the [MySQL world sample dataset](http://pgfoundry.org/frs/?group_id=1000150&release_id=366#world-world-1.0-title-content).
 
