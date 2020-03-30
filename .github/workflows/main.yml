@@ -1,0 +1,42 @@
+name: Main
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+
+      - name: Build image(s)
+        run: docker-compose build
+
+      - name: Start services
+        run: docker-compose -f docker-compose.yaml up -d
+
+      - name: Wait for hasura
+        run: |
+          timeout 300s bash -c \
+            'while [[ "$(curl -s -o /dev/null -w ''%{http_code}'' 127.0.0.1:8080/healthz)" != "200" ]]; do sleep 5; done' \
+          || false
+
+      - name: Prepare test environment
+        run: |
+          mkdir -p tests/responses
+
+      - name: Test for Germany in countries
+        run: |
+          curl --silent --compressed \
+              -H 'content-type: application/json' \
+              -H 'x-hasura-admin-secret: secret' \
+              --output tests/responses/cities.json \
+              --data-binary '{"query":"{\n  country {\n    name\n  }\n}\n","variables":null}' \
+              'http://127.0.0.1:8080/v1/graphql'
+          jq -r '.data.country[] | select(.name == "Germany") | .name' tests/responses/cities.json \
+            | grep -q Germany
+
+      - name: Display failure logs
+        if: failure()
+        run: |
+          docker-compose logs
+          jq tests/responses/*.json || cat tests/responses/*.json
