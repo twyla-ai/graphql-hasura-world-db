@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hasura-world-db
+  labels:
+    app: hasura-world-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hasura
+  template:
+    metadata:
+      labels:
+        app: hasura-world-db
+    spec:
+      containers:
+      - name: postgres
+        image: docker.io/postgres:9.6-alpine
+        env:
+        - name: POSTGRES_USER
+          value: hasura
+        - name: POSTGRES_PASSWORD
+          value: hasura
+        - name: POSTGRES_DB
+          value: hasura
+        ports:
+          - containerPort: 5432
+
+      - name: hasura
+        image: quay.io/twyla-ai/hasura-world-db:latest
+        env:
+        - name: HASURA_GRAPHQL_DATABASE_URL
+          value: postgres://hasura:hasura@127.0.0.1:5432/hasura
+        - name: HASURA_GRAPHQL_ENABLE_CONSOLE
+          value: "true"
+        - name: HASURA_GRAPHQL_ADMIN_SECRET
+          value: secret
+        ports:
+          - containerPort: 8080
+            hostPort: 8080
